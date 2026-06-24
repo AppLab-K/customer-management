@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>案件管理システム</title>
+    <style>
+        /* ===== リセット & ベース ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
+            background: #f7f8fc;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+        .container {
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* ===== ヘッダー ===== */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .app-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #1e293b;
+        }
+        .app-header .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== ボタン ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            text-decoration: none;
+            line-height: 1.4;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #059669;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+        .btn-xs {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        /* ===== カード ===== */
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s;
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        /* ===== フォーム ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 24px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .form-group .required::after {
+            content: " *";
+            color: #ef4444;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fff;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            background: #fff;
+        }
+        .form-group textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+        .form-group .error-text {
+            font-size: 12px;
+            color: #ef4444;
+            min-height: 18px;
+        }
+        .form-group input.error,
+        .form-group select.error,
+        .form-group textarea.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        .radio-group {
+            display: flex;
+            gap: 18px;
+            padding-top: 6px;
+            flex-wrap: wrap;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .radio-group input[type="radio"] {
+            accent-color: #2563eb;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .form-actions .btn {
+            min-width: 120px;
+        }
+
+        /* ===== テーブル ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+            cursor: default;
+        }
+        table th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        table th.sortable:hover {
+            background: #f1f5f9;
+        }
+        table th.sortable::after {
+            content: " ↕";
+            font-size: 12px;
+            opacity: 0.4;
+        }
+        table th.sortable.sorted-asc::after {
+            content: " ↑";
+            opacity: 1;
+            color: #2563eb;
+        }
+        table th.sortable.sorted-desc::after {
+            content: " ↓";
+            opacity: 1;
+            color: #2563eb;
+        }
+        table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+        table tr:hover td {
+            background: #f8fafc;
+        }
+        table .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .priority-high {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .priority-medium {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .priority-low {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .status-badge.status-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .status-badge.status-done {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-badge.status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* ===== 空の状態 ===== */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+        .empty-state p {
+            font-size: 16px;
+            margin-top: 8px;
+        }
+
+        /* ===== 担当者管理 ===== */
+        .assignee-form {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .assignee-form .form-group {
+            flex: 1;
+            min-width: 180px;
+        }
+        .assignee-form .btn {
+            flex-shrink: 0;
+            margin-bottom: 2px;
+        }
+
+        /* ===== メッセージ ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 9999;
+        }
+        .toast {
+            padding: 14px 22px;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.35s ease;
+            max-width: 380px;
+        }
+        .toast-success {
+            background: #10b981;
+        }
+        .toast-error {
+            background: #ef4444;
+        }
+        .toast-info {
+            background: #3b82f6;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== ユーティリティ ===== */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== レスポンシブ ===== */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .app-header .header-actions {
+                width: 100%;
+            }
+            .app-header .header-actions .btn {
+                flex: 1;
+            }
+            .card {
+                padding: 16px;
+            }
+            .card-title {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .assignee-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .assignee-form .form-group {
+                min-width: unset;
+            }
+            .form-actions .btn {
+                min-width: 100px;
+                flex: 1;
+            }
+            table th,
+            table td {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            .toast-container {
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+            }
+            .toast {
+                max-width: 100%;
+            }
+        }
+
+        /* ===== 確認ダイアログ（カスタム） ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .modal-box h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+        .modal-box p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .modal-box .modal-actions .btn {
+            min-width: 90px;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="container">
+        <!-- ヘッダー -->
+        <header class="app-header">
+            <h1>📋 案件管理システム</h1>
+            <div class="header-actions" id="headerActions">
+                <!-- 動的にボタンを表示 -->
+            </div>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <div id="mainContent"></div>
+    </div>
+
+    <!-- トースト -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================================================
+        //  安全なエスケープ処理 (XSS対策)
+        // ============================================================
+        function escapeHTML(str) {
+            if (str == null) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&apos;'
+            };
+            return String(str).replace(/[&<>"']/g, ch => map[ch]);
+        }
+
+        // ============================================================
+        //  トースト通知
+        // ============================================================
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // ============================================================
+        //  カスタム確認ダイアログ（修正済み）
+        // ============================================================
+        function showConfirmDialog(title, message) {
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal-box">
+                        <h3>${escapeHTML(title)}</h3>
+                        <p>${escapeHTML(message)}</p>
+                        <div class="modal-actions">
+                            <button class="btn btn-secondary" id="modalCancel">キャンセル</button>
+                            <button class="btn btn-danger" id="modalOk">削除する</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                const close = (result) => {
+                    overlay.remove();
+                    resolve(result);
+                };
+
+                // 修正：不完全だった行を正しいイベントリスナーに
+                overlay.querySelector('#modalCancel').addEventListener('click', () => close(false));
+                overlay.querySelector('#modalOk').addEventListener('click', () => close(true));
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) close(false);
+                });
+            });
+        }
+
+        // ============================================================
+        //  データ管理 (localStorage)
+        // ============================================================
+        const STORAGE_KEY_PROJECTS = 'kanri_projects';
+        const STORAGE_KEY_ASSIGNEES = 'kanri_assignees';
+
+        function loadProjects() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY_PROJECTS);
+                return data ? JSON.parse(data) : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveProjects(projects) {
+            try {
+                localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(projects));
+            } catch (e) {
+                showToast('データの保存に失敗しました', 'error');
+            }
+        }
+
+        function loadAssignees() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY_ASSIGNEES);
+                return data ? JSON.parse(data) : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveAssignees(assignees) {
+            try {
+                localStorage.setItem(STORAGE_KEY_ASSIGNEES, JSON.stringify(assignees));
+            } catch (e) {
+                showToast('データの保存に失敗しました', 'error');
+            }
+        }
+
+        // 初期データ（サンプル）
+        function initSampleData() {
+            const assignees = loadAssignees();
+            if (assignees.length === 0) {
+                const defaultAssignees = [
+                    { id: 1, name: '山田 太郎', email: '[USER_EMAIL]' },
+                    { id: 2, name: '佐藤 花子', email: '[USER_EMAIL]' },
+                    { id: 3, name: '鈴木 一郎', email: '[USER_EMAIL]' },
+                ];
+                saveAssignees(defaultAssignees);
+            }
+
+            const projects = loadProjects();
+            if (projects.length === 0) {
+                const now = Date.now();
+                const sample = [
+                    {
+                        id: 1,
+                        name: 'Webサイトリニューアル',
+                        customer: '株式会社テクノロジー',
+                        assignee: '山田 太郎',
+                        priority: '高',
+                        status: '進行中',
+                        startDate: '2025-04-01',
+                        dueDate: '2025-06-30',
+                        memo: 'コーポレートサイトの全面リニューアル。デザイン・CMS構築含む。',
+                        createdAt: now - 86400000 * 2,
+                        updatedAt: now - 86400000,
+                    },
+                    {
+                        id: 2,
+                        name: '社内業務効率化ツール開発',
+                        customer: '自社',
+                        assignee: '佐藤 花子',
+                        priority: '中',
+                        status: '未着手',
+                        startDate: '',
+                        dueDate: '2025-08-15',
+                        memo: '勤怠管理・経費精算のシステム化。',
+                        createdAt: now - 86400000 * 5,
+                        updatedAt: now - 86400000 * 5,
+                    },
+                    {
+                        id: 3,
+                        name: 'ECサイト決済システム連携',
+                        customer: '株式会社ショップ',
+                        assignee: '鈴木 一郎',
+                        priority: '低',
+                        status: '完了',
+                        startDate: '2025-02-01',
+                        dueDate: '2025-04-10',
+                        memo: 'PayPay連携、クレジットカード決済リプレイス。',
+                        createdAt: now - 86400000 * 60,
+                        updatedAt: now - 86400000 * 10,
+                    }
+                ];
+                saveProjects(sample);
+            }
+        }
+
+        // ============================================================
+        //  状態管理
+        // ============================================================
+        const state = {
+            projects: loadProjects(),
+            assignees: loadAssignees(),
+            currentView: 'list', // 'list' | 'form' | 'assignee-manager'
+            editingProjectId: null, // null = 新規, number = 編集
+            sortBy: null, // 'priority' | null
+            sortOrder: 'asc', // 'asc' | 'desc'
+            priorityOrder: { '高': 3, '中': 2, '低': 1 },
+        };
+
+        // 次に使うID
+        function getNextProjectId() {
+            const projects = state.projects;
+            if (projects.length === 0) return 1;
+            return Math.max(...projects.map(p => p.id)) + 1;
+        }
+
+        function getNextAssigneeId() {
+            const assignees = state.assignees;
+            if (assignees.length === 0) return 1;
+            return Math.max(...assignees.map(a => a.id)) + 1;
+        }
+
+        // ============================================================
+        //  CSVエクスポート機能
+        // ============================================================
+        function exportCSV() {
+            try {
+                // 現在の表示順に合わせたデータ（ソート状態を反映）
+                let projects = [...state.projects];
+                if (state.sortBy === 'priority') {
+                    const order = state.sortOrder === 'asc' ? 1 : -1;
+                    projects.sort((a, b) => {
+                        const pa = state.priorityOrder[a.priority] || 0;
+                        const pb = state.priorityOrder[b.priority] || 0;
+                        return (pa - pb) * order;
+                    });
+                } else {
+                    // デフォルトは作成日降順
+                    projects.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                }
+
+                // BOM付きUTF-8 CSV
+                const bom = '\uFEFF';
+                const headers = ['案件名', '顧客名', '担当者', '優先度', 'ステータス', '開始日', '期限', 'メモ'];
+                const rows = projects.map(p => [
+                    p.name || '',
+                    p.customer || '',
+                    p.assignee || '',
+                    p.priority || '',
+                    p.status || '',
+                    p.startDate || '',
+                    p.dueDate || '',
+                    (p.memo || '').replace(/\n/g, ' ').replace(/"/g, '""') // メモ内の改行・引用符対策
+                ]);
+
+                // CSV文字列生成（ダブルクォートで囲む）
+                const csvContent = [headers, ...rows]
+                    .map(row => row.map(cell => `"${cell}"`).join(','))
+                    .join('\n');
+
+                const fullContent = bom + csvContent;
+
+                // ダウンロード
+                const blob = new Blob([fullContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `案件一覧_${new Date().toISOString().slice(0, 10)}.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                showToast('CSVをエクスポートしました', 'success');
+            } catch (e) {
+                console.error('CSVエクスポートエラー:', e);
+                showToast('CSVエクスポートに失敗しました', 'error');
+            }
+        }
+
+        // ============================================================
+        //  レンダリング
+        // ============================================================
+        const mainContent = document.getElementById('mainContent');
+        const headerActions = document.getElementById('headerActions');
+
+        function render() {
+            switch (state.currentView) {
+                case 'list':
+                    renderList();
+                    break;
+                case 'form':
+                    renderForm();
+                    break;
+                case 'assignee-manager':
+                    renderAssigneeManager();
+                    break;
+                default:
+                    renderList();
+            }
+        }
+
+        // ---------- 案件一覧 ----------
+        function renderList() {
+            // ヘッダーに新規登録、担当者管理のボタン（CSVボタンはカード内へ）
+            headerActions.innerHTML = `
+                <button class="btn btn-primary" onclick="navigateToForm(null)">＋ 新規案件登録</button>
+                <button class="btn btn-secondary" onclick="navigateToAssigneeManager()">👤 担当者管理</button>
+            `;
+
+            let projects = [...state.projects];
+
+            // 並べ替え
+            if (state.sortBy === 'priority') {
+                const order = state.sortOrder === 'asc' ? 1 : -1;
+                projects.sort((a, b) => {
+                    const pa = state.priorityOrder[a.priority] || 0;
+                    const pb = state.priorityOrder[b.priority] || 0;
+                    return (pa - pb) * order;
+                });
+            } else {
+                projects.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            }
+
+            const isEmpty = projects.length === 0;
+
+            let tableHTML = `
+                <div class="card">
+                    <div class="card-title">
+                        <span>📄 案件一覧</span>
+                        <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSVエクスポート</button>
+                    </div>
+                    ${isEmpty ? `
+                        <div class="empty-state">
+                            <p style="font-size:40px;">📭</p>
+                            <p>登録された案件はありません</p>
+                            <p style="font-size:13px;color:#888;">新しい案件を登録してください</p>
+                        </div>
+                    ` : `
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>案件名</th>
+                                        <th>顧客名</th>
+                                        <th>担当者</th>
+                                        <th class="sortable ${state.sortBy === 'priority' ? (state.sortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc') : ''}" 
+                                            onclick="toggleSort('priority')">優先度</th>
+                                        <th>ステータス</th>
+                                        <th>期限</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+            projects.forEach(p => {
+                const priorityClass = p.priority === '高' ? 'priority-high' :
+                    p.priority === '中' ? 'priority-medium' : 'priority-low';
+                const statusClass = p.status === '進行中' ? 'status-progress' :
+                    p.status === '完了' ? 'status-done' :
+                    p.status === '保留' ? 'status-pending' : '';
+                const statusLabel = p.status || '未着手';
+                const dueDate = p.dueDate || '-';
+                const assigneeName = p.assignee ? p.assignee : '未割当';
+
+                tableHTML += `
+                    <tr>
+                        <td><strong>${escapeHTML(p.name)}</strong></td>
+                        <td>${escapeHTML(p.customer)}</td>
+                        <td>${escapeHTML(assigneeName)}</td>
+                        <td><span class="priority-badge ${priorityClass}">${escapeHTML(p.priority)}</span></td>
+                        <td><span class="status-badge ${statusClass}">${escapeHTML(statusLabel)}</span></td>
+                        <td>${escapeHTML(dueDate)}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="btn btn-primary btn-xs" onclick="navigateToForm(${p.id})">編集</button>
+                                <button class="btn btn-danger btn-xs" onclick="deleteProject(${p.id})">削除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `}
+                </div>
+            `;
+
+            mainContent.innerHTML = tableHTML;
+
+            // ソートインジケータの再設定
+            if (state.sortBy === 'priority') {
+                const ths = document.querySelectorAll('th.sortable');
+                ths.forEach(th => {
+                    if (th.textContent.includes('優先度')) {
+                        th.classList.add(state.sortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                    }
+                });
+            }
+        }
+
+        // ---------- 案件登録・編集フォーム ----------
+        function renderForm() {
+            const isEditing = state.editingProjectId !== null;
+            const project = isEditing ?
+                state.projects.find(p => p.id === state.editingProjectId) :
+                null;
+
+            const title = isEditing ? '✏️ 案件編集' : '📝 新規案件登録';
+            const name = project ? project.name : '';
+            const customer = project ? project.customer : '';
+            const assignee = project ? (project.assignee || '') : '';
+            const priority = project ? (project.priority || '中') : '中';
+            const status = project ? (project.status || '未着手') : '未着手';
+            const startDate = project ? (project.startDate || '') : '';
+            const dueDate = project ? (project.dueDate || '') : '';
+            const memo = project ? (project.memo || '') : '';
+            const showDelete = isEditing;
+
+            // 担当者プルダウン
+            let assigneeOptions = '<option value="">-- 選択してください --</option>';
+            state.assignees.forEach(a => {
+                const selected = a.name === assignee ? 'selected' : '';
+                assigneeOptions += `<option value="${escapeHTML(a.name)}" ${selected}>${escapeHTML(a.name)}</option>`;
+            });
+
+            headerActions.innerHTML = `
+                <button class="btn btn-secondary" onclick="navigateToList()">← 一覧に戻る</button>
+            `;
+
+            const formHTML = `
+                <div class="card">
+                    <div class="card-title">${title}</div>
+                    <form id="projectForm" novalidate>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="required">案件名</label>
+                                <input type="text" id="field_name" value="${escapeHTML(name)}" maxlength="120" placeholder="例：Webサイトリニューアル" />
+                                <div class="error-text" id="error_name"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="required">顧客名</label>
+                                <input type="text" id="field_customer" value="${escapeHTML(customer)}" maxlength="120" placeholder="例：株式会社○○" />
+                                <div class="error-text" id="error_customer"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>担当者</label>
+                                <select id="field_assignee">
+                                    ${assigneeOptions}
+                                </select>
+                                <div class="error-text"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>優先度</label>
+                                <div class="radio-group">
+                                    <label><input type="radio" name="priority" value="高" ${priority === '高' ? 'checked' : ''} /> 🔴 高</label>
+                                    <label><input type="radio" name="priority" value="中" ${priority === '中' ? 'checked' : ''} /> 🟡 中</label>
+                                    <label><input type="radio" name="priority" value="低" ${priority === '低' ? 'checked' : ''} /> 🟢 低</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>ステータス</label>
+                                <select id="field_status">
+                                    <option value="未着手" ${status === '未着手' ? 'selected' : ''}>未着手</option>
+                                    <option value="進行中" ${status === '進行中' ? 'selected' : ''}>進行中</option>
+                                    <option value="完了" ${status === '完了' ? 'selected' : ''}>完了</option>
+                                    <option value="保留" ${status === '保留' ? 'selected' : ''}>保留</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>開始日</label>
+                                <input type="date" id="field_startDate" value="${escapeHTML(startDate)}" />
+                                <div class="error-text"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="required">期限</label>
+                                <input type="date" id="field_dueDate" value="${escapeHTML(dueDate)}" />
+                                <div class="error-text" id="error_dueDate"></div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>詳細メモ</label>
+                                <textarea id="field_memo" placeholder="案件の詳細やメモを入力">${escapeHTML(memo)}</textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">💾 保存</button>
+                            <button type="button" class="btn btn-secondary" onclick="navigateToList()">キャンセル</button>
+                            ${showDelete ? `<button type="button" class="btn btn-danger" onclick="deleteProjectFromForm()">🗑 削除</button>` : ''}
+                        </div>
+                    </form>
+                    <div class="text-center mt-8">
+                        <button class="btn btn-secondary" id="back-btn" onclick="navigateToList()">一覧画面に戻る</button>
+                    </div>
+                </div>
+            `;
+
+            mainContent.innerHTML = formHTML;
+
+            // フォーム送信イベント
+            document.getElementById('projectForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleFormSubmit();
+            });
+        }
+
+        // ---------- 担当者管理 ----------
+        function renderAssigneeManager() {
+            headerActions.innerHTML = `
+                <button class="btn btn-secondary" onclick="navigateToList()">← 一覧に戻る</button>
+            `;
+
+            let rows = '';
+            if (state.assignees.length === 0) {
+                rows = `
+                    <tr>
+                        <td colspan="3" class="text-center" style="color:#9ca3af;">
+                            担当者が登録されていません
+                        </td>
+                    </tr>
+                `;
+            } else {
+                state.assignees.forEach(a => {
+                    rows += `
+                        <tr>
+                            <td>${escapeHTML(a.name)}</td>
+                            <td>${escapeHTML(a.email)}</td>
+                            <td>
+                                <button class="btn btn-danger btn-xs" onclick="deleteAssignee(${a.id})">削除</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const html = `
+                <div class="card">
+                    <div class="card-title">👤 担当者管理</div>
+
+                    <div class="assignee-form" id="assigneeForm">
+                        <div class="form-group">
+                            <label>氏名 <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="newAssigneeName" placeholder="例：高橋 次郎" maxlength="60" />
+                            <div class="error-text" id="error_assigneeName"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>メールアドレス <span style="color:#ef4444;">*</span></label>
+                            <input type="email" id="newAssigneeEmail" placeholder="例：[USER_EMAIL]" maxlength="120" />
+                            <div class="error-text" id="error_assigneeEmail"></div>
+                        </div>
+                        <button class="btn btn-primary" onclick="addAssignee()">追加</button>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>氏名</th>
+                                    <th>メールアドレス</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-8">
+                        <button class="btn btn-secondary" id="back-btn" onclick="navigateToList()">一覧画面に戻る</button>
+                    </div>
+                </div>
+            `;
+
+            mainContent.innerHTML = html;
+
+            // Enterキーで追加
+            document.getElementById('newAssigneeEmail')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addAssignee();
+                }
+            });
+            document.getElementById('newAssigneeName')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('newAssigneeEmail')?.focus();
+                }
+            });
+        }
+
+        // ============================================================
+        //  ナビゲーション
+        // ============================================================
+        window.navigateToList = function() {
+            state.currentView = 'list';
+            state.editingProjectId = null;
+            render();
+        };
+
+        window.navigateToForm = function(projectId) {
+            state.currentView = 'form';
+            state.editingProjectId = projectId;
+            render();
+        };
+
+        window.navigateToAssigneeManager = function() {
+            state.currentView = 'assignee-manager';
+            render();
+        };
+
+        // ============================================================
+        //  ソート
+        // ============================================================
+        window.toggleSort = function(field) {
+            if (state.sortBy === field) {
+                state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortBy = field;
+                state.sortOrder = 'asc';
+            }
+            render();
+        };
+
+        // ============================================================
+        //  フォーム送信処理
+        // ============================================================
+        function handleFormSubmit() {
+            const isEditing = state.editingProjectId !== null;
+
+            const name = document.getElementById('field_name').value.trim();
+            const customer = document.getElementById('field_customer').value.trim();
+            const assignee = document.getElementById('field_assignee').value;
+            const priority = document.querySelector('input[name="priority"]:checked');
+            const status = document.getElementById('field_status').value;
+            const startDate = document.getElementById('field_startDate').value;
+            const dueDate = document.getElementById('field_dueDate').value;
+            const memo = document.getElementById('field_memo').value.trim();
+
+            const priorityValue = priority ? priority.value : '中';
+
+            // バリデーション
+            let hasError = false;
+
+            const errorName = document.getElementById('error_name');
+            if (!name) {
+                errorName.textContent = '案件名は必須です';
+                document.getElementById('field_name').classList.add('error');
+                hasError = true;
+            } else {
+                errorName.textContent = '';
+                document.getElementById('field_name').classList.remove('error');
+            }
+
+            const errorCustomer = document.getElementById('error_customer');
+            if (!customer) {
+                errorCustomer.textContent = '顧客名は必須です';
+                document.getElementById('field_customer').classList.add('error');
+                hasError = true;
+            } else {
+                errorCustomer.textContent = '';
+                document.getElementById('field_customer').classList.remove('error');
+            }
+
+            const errorDueDate = document.getElementById('error_dueDate');
+            if (!dueDate) {
+                errorDueDate.textContent = '期限は必須です';
+                document.getElementById('field_dueDate').classList.add('error');
+                hasError = true;
+            } else {
+                errorDueDate.textContent = '';
+                document.getElementById('field_dueDate').classList.remove('error');
+            }
+
+            if (hasError) {
+                showToast('入力内容にエラーがあります', 'error');
+                return;
+            }
+
+            if (startDate && dueDate && startDate > dueDate) {
+                showToast('開始日が期限より後の日付になっています', 'error');
+                return;
+            }
+
+            const now = Date.now();
+            if (isEditing) {
+                const idx = state.projects.findIndex(p => p.id === state.editingProjectId);
+                if (idx === -1) {
+                    showToast('案件が見つかりませんでした', 'error');
+                    navigateToList();
+                    return;
+                }
+                state.projects[idx] = {
+                    ...state.projects[idx],
+                    name,
+                    customer,
+                    assignee,
+                    priority: priorityValue,
+                    status,
+                    startDate,
+                    dueDate,
+                    memo,
+                    updatedAt: now,
+                };
+                saveProjects(state.projects);
+                showToast('案件を更新しました', 'success');
+            } else {
+                const newProject = {
+                    id: getNextProjectId(),
+                    name,
+                    customer,
+                    assignee,
+                    priority: priorityValue,
+                    status,
+                    startDate,
+                    dueDate,
+                    memo,
+                    createdAt: now,
+                    updatedAt: now,
+                };
+                state.projects.push(newProject);
+                saveProjects(state.projects);
+                showToast('案件を登録しました', 'success');
+            }
+
+            navigateToList();
+        }
+
+        // ============================================================
+        //  案件削除（一覧画面から）
+        // ============================================================
+        window.deleteProject = async function(projectId) {
+            const project = state.projects.find(p => p.id === projectId);
+            if (!project) return;
+
+            const confirmed = await showConfirmDialog(
+                '案件を削除',
+                `「${project.name}」を削除してもよろしいですか？この操作は元に戻せません。`
+            );
+            if (!confirmed) return;
+
+            state.projects = state.projects.filter(p => p.id !== projectId);
+            saveProjects(state.projects);
+            showToast('案件を削除しました', 'success');
+            render();
+        };
+
+        // ============================================================
+        //  案件削除（フォーム画面から）
+        // ============================================================
+        window.deleteProjectFromForm = async function() {
+            if (state.editingProjectId === null) return;
+            const project = state.projects.find(p => p.id === state.editingProjectId);
+            if (!project) return;
+
+            const confirmed = await showConfirmDialog(
+                '案件を削除',
+                `「${project.name}」を削除してもよろしいですか？この操作は元に戻せません。`
+            );
+            if (!confirmed) return;
+
+            state.projects = state.projects.filter(p => p.id !== state.editingProjectId);
+            saveProjects(state.projects);
+            showToast('案件を削除しました', 'success');
+            navigateToList();
+        };
+
+        // ============================================================
+        //  担当者追加
+        // ============================================================
+        window.addAssignee = function() {
+            const nameInput = document.getElementById('newAssigneeName');
+            const emailInput = document.getElementById('newAssigneeEmail');
+            const errorName = document.getElementById('error_assigneeName');
+            const errorEmail = document.getElementById('error_assigneeEmail');
+
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+
+            let hasError = false;
+
+            if (!name) {
+                errorName.textContent = '氏名は必須です';
+                nameInput.classList.add('error');
+                hasError = true;
+            } else {
+                errorName.textContent = '';
+                nameInput.classList.remove('error');
+            }
+
+            if (!email) {
+                errorEmail.textContent = 'メールアドレスは必須です';
+                emailInput.classList.add('error');
+                hasError = true;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errorEmail.textContent = '正しいメールアドレス形式で入力してください';
+                emailInput.classList.add('error');
+                hasError = true;
+            } else {
+                errorEmail.textContent = '';
+                emailInput.classList.remove('error');
+            }
+
+            if (!hasError && state.assignees.some(a => a.email === email)) {
+                errorEmail.textContent = 'このメールアドレスは既に登録されています';
+                emailInput.classList.add('error');
+                hasError = true;
+            }
+            if (!hasError && state.assignees.some(a => a.name === name)) {
+                errorName.textContent = 'この氏名は既に登録されています';
+                nameInput.classList.add('error');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            const newAssignee = {
+                id: getNextAssigneeId(),
+                name,
+                email,
+            };
+            state.assignees.push(newAssignee);
+            saveAssignees(state.assignees);
+            showToast('担当者を追加しました', 'success');
+
+            nameInput.value = '';
+            emailInput.value = '';
+            nameInput.focus();
+
+            render();
+        };
+
+        // ============================================================
+        //  担当者削除
+        // ============================================================
+        window.deleteAssignee = async function(assigneeId) {
+            const assignee = state.assignees.find(a => a.id === assigneeId);
+            if (!assignee) return;
+
+            const usedIn = state.projects.filter(p => p.assignee === assignee.name);
+            let message = `「${assignee.name}」を削除してもよろしいですか？`;
+            if (usedIn.length > 0) {
+                message = `「${assignee.name}」は ${usedIn.length} 件の案件に割り当てられています。削除すると担当者が解除されますが、よろしいですか？`;
+            }
+
+            const confirmed = await showConfirmDialog('担当者を削除', message);
+            if (!confirmed) return;
+
+            state.assignees = state.assignees.filter(a => a.id !== assigneeId);
+            state.projects.forEach(p => {
+                if (p.assignee === assignee.name) {
+                    p.assignee = '';
+                }
+            });
+            saveAssignees(state.assignees);
+            saveProjects(state.projects);
+            showToast('担当者を削除しました', 'success');
+            render();
+        };
+
+        // ============================================================
+        //  初期化
+        // ============================================================
+        initSampleData();
+        // 状態をリロード（サンプルデータが保存された後）
+        state.projects = loadProjects();
+        state.assignees = loadAssignees();
+
+        // レンダリング開始
+        render();
+
+        // ============================================================
+        //  グローバルエラーハンドリング
+        // ============================================================
+        window.addEventListener('error', (e) => {
+            console.error('予期しないエラー:', e.error);
+            showToast('システムエラーが発生しました', 'error');
+        });
+
+        console.log('✅ 案件管理システム initialized');
+        console.log(`📊 案件数: ${state.projects.length}, 担当者数: ${state.assignees.length}`);
+    </script>
+
+</body>
+</html>
